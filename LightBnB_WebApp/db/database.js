@@ -115,7 +115,7 @@ const getAllProperties = function (options, limit = 10) {
   let queryString = `
   SELECT properties.*, avg(property_reviews.rating) as average_rating
   FROM properties
-  JOIN property_reviews ON properties.id = property_id
+  LEFT JOIN property_reviews ON properties.id = property_id
   `;
 
   // 3 Check if a city, owner_id or price_per_night has been passed as a option. Add them to the params array and create the WHERE clause
@@ -142,6 +142,8 @@ const getAllProperties = function (options, limit = 10) {
     }
   }
 
+  queryString += `GROUP BY properties.id`;
+
   if (options.minimum_rating) {
     queryParams.push(options.minimum_rating);
     queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length} `;
@@ -149,7 +151,6 @@ const getAllProperties = function (options, limit = 10) {
 
   queryParams.push(limit);
   queryString += `
-  GROUP BY properties.id
   ORDER BY cost_per_night
   LIMIT $${queryParams.length};
   `;
